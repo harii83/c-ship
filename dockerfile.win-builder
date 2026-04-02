@@ -1,0 +1,25 @@
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install MinGW-w64 for cross-compilation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cmake \
+    g++-mingw-w64-x86-64 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create build and output directories
+RUN mkdir -p /app/build /app/dist
+
+# Configure CMake for Windows Cross-Compilation
+# - Static linking flags ensure no DLL dependencies (no dependencies)
+# - Release optimization (-O3)
+RUN cd /app/build && cmake /app/src \
+    -DCMAKE_TOOLCHAIN_FILE=/app/src/cmake/windows-toolchain.cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/app/dist
+
+# The actual build is triggered by docker-compose command
+CMD ["cmake", "--build", ".", "--config", "Release"]

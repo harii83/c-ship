@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # 1. Development Environment (Linux Native)
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: cpp-dev
+    volumes:
+      - .:/app/src
+      - ./build-dev:/app/build
+    working_dir: /app/build
+    command: tail -f /dev/null # Keeps container running for you to exec into
+    profiles: ["dev"]
+
+  # 2. Windows Production Builder (Cross-Compile)
+  build-windows:
+    build:
+      context: .
+      dockerfile: Dockerfile.win-builder
+    container_name: cpp-win-builder
+    volumes:
+      - .:/app/src
+      - ./dist:/app/dist
+    working_dir: /app/build
+    command: cmake --build . --config Release
+    profiles: ["prod"]
